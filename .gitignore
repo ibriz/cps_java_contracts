@@ -6,3 +6,5 @@ gradle.properties
 keystore.zip
 lib
 CPSTreasury.iml
+CPFTreasury/build
+CPSTreasury/build
