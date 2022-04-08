@@ -260,7 +260,6 @@ public class CPFTreasury {
     }
 
     /**
-     *
      * @return
      */
     @External(readonly = true)
@@ -337,11 +336,11 @@ public class CPFTreasury {
         Context.require(proposalExists(_ipfs_key), TAG + ": IPFS hash does not exist.");
         Context.require(_flag.equals(bnUSD), TAG + ": Unsupported token. " + _flag);
 
-        if (_added_budget == null){
+        if (_added_budget == null) {
             _added_budget = BigInteger.ZERO;
         }
 
-        if (_total_installment_count == null){
+        if (_total_installment_count == null) {
             _total_installment_count = BigInteger.ZERO;
         }
 
@@ -527,16 +526,14 @@ public class CPFTreasury {
                 } else {
                     Context.revert(TAG + " Not supported method " + json.get("method"));
                 }
-            }
-            else if (_from.equals(cpsTreasuryScore.get())) {
+            } else if (_from.equals(cpsTreasuryScore.get())) {
                 if (json.get("method").asString().equals("disqualify_project")) {
                     String ipfs_key = json.get("params").asObject().get("ipfs_key").asString();
                     disqualify_proposal_fund(ipfs_key, _value, bnUSD, _from);
                 } else {
                     Context.revert(TAG + " Not supported method " + json.get("method"));
                 }
-            }
-            else if (_from.equals(dexScore.get()) || _from.equals(routerScore.get())){
+            } else if (_from.equals(dexScore.get()) || _from.equals(routerScore.get())) {
                 burnExtraFund();
             }
         }
@@ -552,20 +549,20 @@ public class CPFTreasury {
     }
 
     @External(readonly = true)
-    public List<String> getProposalKeys(){
+    public List<String> getProposalKeys() {
         List<String> ipfsHash = new ArrayList<>();
-        for (int i = 0; i < proposalsKeys.size(); i++){
+        for (int i = 0; i < proposalsKeys.size(); i++) {
             ipfsHash.add(proposalsKeys.get(i));
         }
         return ipfsHash;
     }
 
     @External(readonly = true)
-    public BigInteger getProposalBudgets(String ipfsHash){
+    public BigInteger getProposalBudgets(String ipfsHash) {
         return treasuryFundBnUSd.get();
     }
 
     @External
-    public void setProposalKeysAndBudgets(){
+    public void setProposalKeysAndBudgets() {
     }
 }
