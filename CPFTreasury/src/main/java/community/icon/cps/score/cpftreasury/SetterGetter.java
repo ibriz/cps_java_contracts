@@ -1,7 +1,10 @@
 package community.icon.cps.score.cpftreasury;
 
 import score.Address;
+import score.Context;
 import score.annotation.External;
+
+import static community.icon.cps.score.cpftreasury.Constants.TAG;
 
 public class SetterGetter {
     /**
@@ -95,7 +98,7 @@ public class SetterGetter {
      */
     @External
     public void setDexScore(Address _score) {
-        Validations.validateAdminScore(_score);
+        validateAdminScore(_score);
         CPFTreasury.dexScore.set(_score);
     }
 
@@ -116,7 +119,7 @@ public class SetterGetter {
      */
     @External
     public void setRouterScore(Address _score) {
-        Validations.validateAdminScore(_score);
+        validateAdminScore(_score);
         CPFTreasury.routerScore.set(_score);
     }
 
@@ -128,5 +131,30 @@ public class SetterGetter {
     @External(readonly = true)
     public Address getRouterScore() {
         return CPFTreasury.routerScore.get();
+    }
+
+
+    public void validateAdmins() {
+        try {
+            Boolean isAdmin = callScore(Boolean.class, CPFTreasury.cpsScore.get(), "is_admin", Context.getCaller());
+            Context.require(isAdmin, TAG + ": Only Admins can call this method");
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
+
+    public void validateAdminScore(Address _score) {
+        Context.require(_score.isContract(), TAG + ": Target " + _score + " is not a SCORE");
+        validateAdmins();
+    }
+
+
+    public <T> T callScore(Class<T> t, Address address, String method, Object... params) {
+        return Context.call(t, address, method, params);
+    }
+
+    public void callScore(Address address, String method, Object... params) {
+        Context.call(address, method, params);
     }
 }
