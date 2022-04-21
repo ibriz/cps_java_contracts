@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.Answers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import score.Address;
@@ -23,8 +24,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 public class CPFTTreasuryTest extends TestBase {
     private static final Address ZERO_ADDRESS = new Address(new byte[Address.LENGTH]);
@@ -54,9 +56,14 @@ public class CPFTTreasuryTest extends TestBase {
     VarDB<Integer> swapState = Mockito.mock(VarDB.class);
     VarDB<Integer> swapCount = Mockito.mock(VarDB.class);
 
+    CPFTreasury scoreSpy;
+
     @BeforeEach
     public void setup() throws Exception {
         tokenScore = sm.deploy(owner, CPFTreasury.class);
+        CPFTreasury instance = (CPFTreasury) tokenScore.getInstance();
+        scoreSpy = spy(instance);
+        tokenScore.setInstance(scoreSpy);
     }
 
     @Test
@@ -182,16 +189,15 @@ public class CPFTTreasuryTest extends TestBase {
     }
 
     void setRouterScoreExceptions(Account address, Address _score) {
-        VarDB<Address> cpsScore = mock(VarDB.class);
-        try (MockedStatic<Context> theMock = Mockito.mockStatic(Context.class)){
-            theMock.when(() -> Context.call(cpsScore.get(), "is_admin", Context.getCaller())).thenReturn(false);
-            tokenScore.invoke(address, "setRouterScore", _score);
-        } catch (Exception e) {
-            throw e;
-        }
+//        VarDB<Address> cpsScore = mock(VarDB.class);
+        doReturn(Boolean.FALSE).when(scoreSpy).callScore(eq(Boolean.class), any(), eq("is_admin"),eq(address.getAddress()));
+
+//            theMock.when(() -> Context.call(cpsScore.get(), "is_admin", Context.getCaller())).thenReturn(false);
+        tokenScore.invoke(address, "setRouterScore", _score);
+
     }
 
-//    @Test
+    //    @Test
 //    void setCPSScoreNotAdmin() {
 //        Executable setCPSScoreNotOwner = () -> setCPSScoreExceptions(testing_account, score_address);
 //        expectErrorMessage(setCPSScoreNotOwner, TAG + ": Only owner can call this method");
@@ -215,17 +221,18 @@ public class CPFTTreasuryTest extends TestBase {
 //        expectErrorMessage(setSICXScoreNotOwner, TAG + ": Only owner can call this method");
 //    }
 //
-//    @Test
-//    void setDEXScoreNotAdmin() {
-//        Executable setDEXScoreNotOwner = () -> setDEXScoreExceptions(testing_account, score_address);
-//        expectErrorMessage(setDEXScoreNotOwner, TAG + ": Only owner can call this method");
-//    }
-//
-//    @Test
-//    void setRouterScoreNotAdmin() {
-//        Executable setRouterScoreNotOwner = () -> setRouterScoreExceptions(testing_account, score_address);
-//        expectErrorMessage(setRouterScoreNotOwner, TAG + ": Only owner can call this method");
-//    }
+    @Test
+    void setDEXScoreNotAdmin() {
+        Executable setDEXScoreNotOwner = () -> setDEXScoreExceptions(testing_account, score_address);
+        expectErrorMessage(setDEXScoreNotOwner, TAG + ": Only owner can call this method");
+    }
+
+    //
+    @Test
+    void setRouterScoreNotAdmin() {
+        Executable setRouterScoreNotOwner = () -> setRouterScoreExceptions(testing_account, score_address);
+        expectErrorMessage(setRouterScoreNotOwner, TAG + ": Only admins can call this method");
+    }
 
     @Test
     void transferProposalFundToCPSTreasury() {
@@ -235,9 +242,7 @@ public class CPFTTreasuryTest extends TestBase {
         setCPSScoreMethod(score_address);
 
         try (MockedStatic<Context> theMock = Mockito.mockStatic(Context.class)) {
-            theMock.
-                    when(() -> Context.getCaller()).
-                    thenReturn(score_address);
+            theMock.when(() -> Context.getCaller()).thenReturn(score_address);
             Mockito.when(proposalBudgets.getOrDefault("Proposal 1", null)).thenReturn(BigInteger.valueOf(10));
             theMock.when(() -> Context.getAddress()).thenReturn(tokenScore.getAddress());
             theMock.when(() -> Context.call(BigInteger.class, bnUSDScore, "balanceOf", tokenScore.getAddress())).thenReturn(BigInteger.valueOf(1000).multiply(MULTIPLIER));
@@ -312,10 +317,10 @@ public class CPFTTreasuryTest extends TestBase {
     }
 
     @Test
-    void swapIcxBnusd(){
+    void swapIcxBnusd() {
         setSICXScoreMethod(sicxScore);
         setBMUSDScoreMethod(bnUSDScore);
-        try(MockedStatic<Context> theMock = Mockito.mockStatic(Context.class)){
+        try (MockedStatic<Context> theMock = Mockito.mockStatic(Context.class)) {
             VarDB<Address> routerScore = mock(VarDB.class);
             Address[] path = new Address[]{sicxScore, bnUSDScore};
             Object[] params = new Object[]{path};
@@ -739,7 +744,6 @@ public class CPFTTreasuryTest extends TestBase {
             tokenScore.invoke(owner, "setRouterScore", score_address);
         }
     }
-
 
 
 }
