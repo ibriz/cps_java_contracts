@@ -4,6 +4,8 @@ import score.Address;
 import score.Context;
 import score.annotation.External;
 
+import java.math.BigInteger;
+
 import static community.icon.cps.score.cpftreasury.Constants.TAG;
 
 public class SetterGetter {
@@ -149,6 +151,12 @@ public class SetterGetter {
         validateAdmins();
     }
 
+    public static void validateCpsScore() {
+        Address cpsScore = CPFTreasury.cpsScore.get();
+        Context.require(Context.getCaller().equals(cpsScore),
+                TAG + ": Only " + cpsScore + " SCORE can send fund using this method.");
+    }
+
 
     public <T> T callScore(Class<T> t, Address address, String method, Object... params) {
         return Context.call(t, address, method, params);
@@ -156,5 +164,9 @@ public class SetterGetter {
 
     public void callScore(Address address, String method, Object... params) {
         Context.call(address, method, params);
+    }
+
+    public void callScore(BigInteger amount, Address address, String method, Object... params) {
+        Context.call(amount, address, method, params);
     }
 }
