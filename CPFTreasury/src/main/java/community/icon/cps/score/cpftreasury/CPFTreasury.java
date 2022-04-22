@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import static community.icon.cps.score.cpftreasury.Constants.*;
-import static community.icon.cps.score.cpftreasury.Validations.validateAdmins;
-import static community.icon.cps.score.cpftreasury.Validations.validateCpsScore;
 
 public class CPFTreasury extends SetterGetter {
 
@@ -24,9 +22,9 @@ public class CPFTreasury extends SetterGetter {
     private final VarDB<BigInteger> treasuryFund = Context.newVarDB(TREASURY_FUND, BigInteger.class);
     private final VarDB<BigInteger> treasuryFundbnUSD = Context.newVarDB(TREASURY_FUND_BNUSD, BigInteger.class);
 
-    public static final VarDB<Address> cpsTreasuryScore = Context.newVarDB(CPS_TREASURY_SCORE, Address.class);
     public static final VarDB<Address> cpsScore = Context.newVarDB(CPS_SCORE, Address.class);
     public static final VarDB<Address> balancedDollar = Context.newVarDB(BALANCED_DOLLAR, Address.class);
+    public static final VarDB<Address> cpsTreasuryScore = Context.newVarDB(CPS_TREASURY_SCORE, Address.class);
     public static final VarDB<Address> dexScore = Context.newVarDB(DEX_SCORE, Address.class);
     public static final VarDB<Address> sICXScore = Context.newVarDB(SICX_SCORE, Address.class);
     public static final VarDB<Address> routerScore = Context.newVarDB(ROUTER_SCORE, Address.class);
@@ -67,7 +65,7 @@ public class CPFTreasury extends SetterGetter {
 
 
     private void burn(BigInteger amount) {
-        Context.call(amount, SYSTEM_ADDRESS, "burn");
+        callScore(amount, SYSTEM_ADDRESS, "burn");
     }
 
     /**
@@ -82,7 +80,7 @@ public class CPFTreasury extends SetterGetter {
     }
 
     private BigInteger getTotalFundBNUSD() {
-        return (BigInteger) Context.call(balancedDollar.get(), "balanceOf", Context.getAddress());
+        return callScore(BigInteger.class, balancedDollar.get(), "balanceOf", Context.getAddress());
     }
 
     @External(readonly = true)
@@ -109,7 +107,7 @@ public class CPFTreasury extends SetterGetter {
         BigInteger totalTransfer = _total_budget.add(sponsorReward);
 
         Address balancedDollar = CPFTreasury.balancedDollar.get();
-        BigInteger bnUSDBalance = Context.call(BigInteger.class, balancedDollar, "balanceOf", Context.getAddress());
+        BigInteger bnUSDBalance = callScore(BigInteger.class, balancedDollar, "balanceOf", Context.getAddress());
         Context.require(totalTransfer.compareTo(bnUSDBalance) < 0, TAG + ": Not enough fund " + bnUSDBalance + " token available");
 
         proposalsKeys.add(_ipfs_key);
@@ -127,7 +125,7 @@ public class CPFTreasury extends SetterGetter {
         params.add("token", token_flag);
         depositProposal.add("params", params);
 
-        Context.call(balancedDollar, "transfer", cpsTreasuryScore.get(), totalTransfer, depositProposal.toString().getBytes());
+        callScore(balancedDollar, "transfer", cpsTreasuryScore.get(), totalTransfer, depositProposal.toString().getBytes());
         ProposalFundTransferred(_ipfs_key, "Successfully transferred " + totalTransfer + " " + token_flag + " to CPS Treasury " + cpsTreasuryScore.get());
     }
 
@@ -160,7 +158,7 @@ public class CPFTreasury extends SetterGetter {
         params.add("_added_installment_count", _total_installment_count);
         budgetAdjustmentData.add("params", params);
 
-        Context.call(balancedDollar.get(), "transfer", cpsTreasuryScore.get(), totalTransfer, budgetAdjustmentData.toString().getBytes());
+        callScore(balancedDollar.get(), "transfer", cpsTreasuryScore.get(), totalTransfer, budgetAdjustmentData.toString().getBytes());
         ProposalFundTransferred(_ipfs_key, "Successfully transferred " + totalTransfer + " " + bnUSD + " to CPS Treasury");
     }
 
@@ -203,21 +201,21 @@ public class CPFTreasury extends SetterGetter {
         JsonObject params = new JsonObject();
         params.add("toToken", _to.toString());
         swapData.add("params", params);
-        Context.call(_from, "transfer", dexScore.get(), _amount, swapData.toString().getBytes());
+        callScore(_from, "transfer", dexScore.get(), _amount, swapData.toString().getBytes());
     }
 
     @External
     public void swapIcxBnusd(BigInteger amount) {
         Address[] path = new Address[]{sICXScore.get(), balancedDollar.get()};
         Object[] params = new Object[]{path};
-        Context.call(amount, routerScore.get(), "route", params);
+        callScore(amount, routerScore.get(), "route", params);
     }
 
     @External
     public void swap_tokens(int _count) {
         validateCpsScore();
-        BigInteger sicxICXPrice = (BigInteger) Context.call(dexScore.get(), "getPrice", sICXICXPoolID);
-        BigInteger sicxBnusdPrice = (BigInteger) Context.call(dexScore.get(), "getPrice", sICXBNUSDPoolID);
+        BigInteger sicxICXPrice = callScore(BigInteger.class, dexScore.get(), "getPrice", sICXICXPoolID);
+        BigInteger sicxBnusdPrice = callScore(BigInteger.class, dexScore.get(), "getPrice", sICXBNUSDPoolID);
         BigInteger icxbnUSDPrice = sicxBnusdPrice.multiply(EXA).divide(sicxICXPrice);
         BigInteger bnUSDRemainingToSwap = get_remaining_swap_amount().get("remainingToSwap");
         if (bnUSDRemainingToSwap.compareTo(BigInteger.TEN.multiply(EXA)) < 0 || _count == 0) {
@@ -257,7 +255,7 @@ public class CPFTreasury extends SetterGetter {
         Address cpsScoreAddress = cpsScore.get();
         Address caller = Context.getCaller();
 
-        boolean checkCaller = caller.equals(cpsScoreAddress) || (Boolean) Context.call(cpsScoreAddress, "is_admin", caller);
+        boolean checkCaller = caller.equals(cpsScoreAddress) || callScore(Boolean.class, cpsScoreAddress, "is_admin", caller);
         Context.require(checkCaller, TAG + ": Only admin can call this method.");
         swapState.set(SwapContinue);
         swapCount.set(SwapReset);
@@ -306,7 +304,7 @@ public class CPFTreasury extends SetterGetter {
             if (_from.equals(dexScore.get())) {
                 JsonObject swapICX = new JsonObject();
                 swapICX.add("method", "_swap_icx");
-                Context.call(caller, "transfer", dexScore.get(), _value, swapICX.toString().getBytes());
+                callScore(caller, "transfer", dexScore.get(), _value, swapICX.toString().getBytes());
             } else {
                 Context.revert(TAG + ": sICX can be approved only from Balanced DEX.");
             }
