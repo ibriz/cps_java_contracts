@@ -16,7 +16,7 @@ import java.util.Map;
 import community.icon.cps.score.cpstreasury.utils.consts;
 
 public class CPSTreasury extends ProposalData {
-    private static final String TAG = "CPS_TREASURY";
+    public static final String TAG = "CPS_TREASURY";
     private static final String PROPOSAL_DB_PREFIX = "proposal";
 
     private static final String ID = "id";
