@@ -107,39 +107,6 @@ public class CPSTreasury extends ProposalData {
         return proposalData.getDataFromProposalDB(_proposal_key);
     }
 
-    @External
-    public void setCpsScore(Address _score) {
-        validateAdminScore(_score);
-        cpsScore.set(_score);
-    }
-
-    @External(readonly = true) //Todo java convention in get methods??
-    public Address getCpsScore() {
-        return cpsScore.get();
-    }
-
-    @External
-    public void setCpfTreasuryScore(Address _score) {
-        validateAdminScore(_score);
-        cpfTreasuryScore.set(_score);
-    }
-
-    @External(readonly = true)
-    public Address getCpfTreasuryScore() {
-        return cpfTreasuryScore.get();
-    }
-
-    @External
-    public void setBnUSDScore(Address _score) {
-        validateAdminScore(_score);
-        balancedDollar.set(_score);
-    }
-
-    @External
-    public Address getBnUSDScore() {
-        return balancedDollar.get();
-    }
-
     @External(readonly = true)
     public Map<String, ?> get_contributor_projected_fund(Address _wallet_address) {
         BigInteger totalAmountToBePaidICX = BigInteger.ZERO;
