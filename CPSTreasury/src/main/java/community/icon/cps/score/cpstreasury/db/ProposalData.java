@@ -7,7 +7,7 @@ import community.icon.cps.score.cpstreasury.utils.consts;
 import java.math.BigInteger;
 import java.util.Map;
 
-public class ProposalData {
+public class ProposalData extends SetterGetter{
     public static class ProposalAttributes{
         public String ipfs_hash;
         public int project_duration;
