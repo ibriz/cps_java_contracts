@@ -1,4 +1,5 @@
 package community.icon.cps.score.cpstreasury.db;
+import community.icon.cps.score.cpstreasury.SetterGetter;
 
 import score.*;
 import community.icon.cps.score.cpstreasury.utils.consts;
