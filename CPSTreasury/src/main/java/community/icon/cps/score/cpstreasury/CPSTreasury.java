@@ -90,20 +90,6 @@ public class CPSTreasury extends ProposalData {
         return proposalsKeyListIndex.getOrDefault(_ipfs_key, null) != null;
     }
 
-    private void validateAdmins() {
-        Boolean isAdmin = callScore(Boolean.class, cpsScore.get(), "is_admin", Context.getCaller());
-        Context.require(isAdmin, TAG + ": Only admins can call this method");
-
-    }
-
-    private void validateAdminScore(Address _score) {
-        validateAdmins();
-        Context.require(_score.isContract(), TAG + "Target " + _score + " is not a score.");
-    }
-
-    private void validateCpsScore() {
-        Context.require(Context.getCaller().equals(cpsScore.get()), TAG + ": Only CPS score " + cpsScore.get() + " can send fund using this method.");
-    }
 
     private void addRecord(ProposalAttributes _proposal) {
         String ipfs_hash = _proposal.ipfs_hash;
