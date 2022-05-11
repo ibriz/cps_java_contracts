@@ -422,18 +422,6 @@ public class CPSTreasury extends ProposalData {
         }
     }
 
-    public <T> T callScore(Class<T> t, Address address, String method, Object... params) {
-        return Context.call(t, address, method, params);
-    }
-
-    public void callScore(Address address, String method, Object... params) {
-        Context.call(address, method, params);
-    }
-
-    public void callScore(BigInteger amount, Address address, String method, Object... params) {
-        Context.call(amount, address, method, params);
-    }
-
     @EventLog(indexed = 1)
     public void ProposalDisqualified(String _ipfs_key, String note) {
     }
