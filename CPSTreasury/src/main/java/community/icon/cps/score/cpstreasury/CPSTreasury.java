@@ -55,9 +55,6 @@ public class CPSTreasury extends ProposalData {
     private final DictDB<String, BigInteger> fundRecord = Context.newDictDB(FUND_RECORD, BigInteger.class);
     private final BranchDB<String, DictDB<String, BigInteger>> installmentFundRecord = Context.newBranchDB(INSTALLMENT_FUND_RECORD, BigInteger.class);
 
-    private final VarDB<Address> cpfTreasuryScore = Context.newVarDB(CPF_TREASURY_SCORE, Address.class);
-    private final VarDB<Address> cpsScore = Context.newVarDB(CPS_SCORE, Address.class);
-    private final VarDB<Address> balancedDollar = Context.newVarDB(BALANCED_DOLLAR, Address.class);
     private final BranchDB<String, ArrayDB<String>> contributorProjects = Context.newBranchDB(CONTRIBUTOR_PROJECTS, String.class);
     private final BranchDB<String, ArrayDB<String>> sponsorProjects = Context.newBranchDB(SPONSOR_PROJECTS, String.class);
 
