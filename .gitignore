@@ -6,5 +6,10 @@ gradle.properties
 keystore.zip
 lib
 CPSTreasury.iml
+<<<<<<< HEAD
 CPFTreasury/build
 CPSTreasury/build
+=======
+CPFTreasury/build/*
+CPSTreasury/build/*
+>>>>>>> CPST_CPFT_merge_translation
